@@ -73,6 +73,13 @@ function dateText(d: Date): string {
     return `${date} ${time}`;
 }
 
+// The API's timeStamp is an ISO 8601 date-time read as local time in a 7pace user's time zone,
+// so send the wall-clock time without an offset.
+function apiTimestamp(d: Date): string {
+    var pad = (n: number) => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+}
+
 function columnLetter(col: number): string {
     var letters = '';
     for (; col > 0; col = Math.floor((col - 1) / 26)) {
@@ -117,7 +124,7 @@ export class DataService{
           if(map.timeStamp && element[map.timeStamp]){
             var date = Date.parse(element[map.timeStamp]);
             if(!isNaN(date))
-              workLog.timeStamp = new Date(date).toLocaleString();
+              workLog.timeStamp = apiTimestamp(new Date(date));
             else 
               errors.push(`"TimeStamp" is not a valid datetime value in a cell ${map.timeStamp}${index + addIndex}.`);
           } else{
@@ -131,7 +138,7 @@ export class DataService{
               }
               var date = Date.parse(timestamp);
               if(!isNaN(date)){
-                workLog.timeStamp = new Date(date).toLocaleString();
+                workLog.timeStamp = apiTimestamp(new Date(date));
               }
               else {
                 errors.push(`"Date" and "Start" do not specify a valid starting datetime value "${timestamp}" in a cell(s) ${map.date}${index + addIndex}.`);

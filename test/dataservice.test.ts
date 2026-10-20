@@ -9,13 +9,15 @@ import { APIService } from '../src/services/apiservice';
 import { AuthType } from '../src/models/authtype';
 import { Worklog } from '../src/models/worklog';
 
+// Run in a zone that is not UTC, as CI runners usually are, so a timestamp converted to UTC
+// fails. A half-hour offset also catches an off-by-whole-hours conversion.
+process.env.TZ = 'Asia/Kolkata';
+
 const FIXTURES = path.join(__dirname, 'fixtures');
 const fixture = (name: string) => path.join(FIXTURES, name);
 
-// The service renders timestamps with toLocaleString(), so expectations are built the same
-// way from a local wall-clock time: the assertions hold in any locale and time zone.
-const local = (y: number, m: number, d: number, hh = 0, mm = 0) =>
-  new Date(y, m - 1, d, hh, mm).toLocaleString();
+// Timestamps are sent as ISO 8601 local wall-clock time with no offset, whatever the machine's
+// locale, so expectations are literal strings.
 
 function writeTemp(name: string, content: string): string {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'worklogs-'));
@@ -47,7 +49,7 @@ describe('getMappingData, positional columns from config.json', () => {
       assert.deepEqual(result.get(API.toLowerCase()), [
         {
           userId: 'alice@example.com',
-          timeStamp: local(2026, 10, 1, 9, 30),
+          timeStamp: '2026-10-01T09:30:00',
           length: 5400,
           billableLength: 3600,
           activityTypeId: 'Development',
@@ -56,7 +58,7 @@ describe('getMappingData, positional columns from config.json', () => {
         },
         {
           userId: 'bob@example.com',
-          timeStamp: local(2026, 10, 2, 14, 0),
+          timeStamp: '2026-10-02T14:00:00',
           length: 900,
           billableLength: 0,
           activityTypeId: 'Meeting',
@@ -65,6 +67,17 @@ describe('getMappingData, positional columns from config.json', () => {
       ]);
     });
   }
+
+  test('timestamps do not depend on the default locale', async (t) => {
+    // Node's default locale comes from the OS, so simulate a German one: any call that
+    // omits the locale argument now formats as de-DE.
+    const original = Date.prototype.toLocaleString;
+    t.mock.method(Date.prototype, 'toLocaleString', function (this: Date, locales?: string, options?: Intl.DateTimeFormatOptions) {
+      return original.call(this, locales ?? 'de-DE', options);
+    });
+    const [log] = (await service().getMappingData(fixture('positional.csv'), false, API)).get(API.toLowerCase())!;
+    assert.equal(log.timeStamp, '2026-10-01T09:30:00');
+  });
 
   test('reads only the first sheet and skips blank rows', async () => {
     const logs = (await service().getMappingData(fixture('positional.xlsx'), false, API)).get(API.toLowerCase())!;
@@ -165,7 +178,7 @@ describe('getMappingData, column names from the header row (-m)', () => {
         {
           userId: 'alice@example.com',
           workItemId: 101,
-          timeStamp: local(2026, 10, 1, 9, 30),
+          timeStamp: '2026-10-01T09:30:00',
           length: 7200,
           billableLength: 5400,
           activityTypeId: 'Development',
@@ -174,7 +187,7 @@ describe('getMappingData, column names from the header row (-m)', () => {
         {
           userId: 'bob@example.com',
           workItemId: 102,
-          timeStamp: local(2026, 10, 2),
+          timeStamp: '2026-10-02T00:00:00',
           length: 1800,
           comment: 'Planning',
         },
@@ -182,7 +195,7 @@ describe('getMappingData, column names from the header row (-m)', () => {
       assert.deepEqual(result.get('fabrikam'), [
         {
           userId: 'carol@example.com',
-          timeStamp: local(2026, 10, 3, 13, 15),
+          timeStamp: '2026-10-03T13:15:00',
           length: 3600,
           comment: 'Support',
         },
