@@ -39,7 +39,7 @@ describe('validate', () => {
     });
   }
 
-  for (const name of ['w.txt', 'w.json', 'xlsx']) {
+  for (const name of ['w.xls', 'w.txt', 'w.json', 'xlsx']) {
     test(`rejects ${name}`, () => {
       assert.equal(validate({ ...valid(), file: file(name) }), true);
       assert.match(printed.join('\n'), /is not in supported format/);
