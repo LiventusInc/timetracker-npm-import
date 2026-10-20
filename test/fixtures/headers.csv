@@ -1,0 +1,4 @@
+UserName,WorkItem,Date,Start,Duration,BillableDuration,Comment,ActivityType,Organization
+alice@example.com,101,10/1/2026,9:30 AM,2,1.5,Review,Development,ContosoA
+bob@example.com,102,10/2/2026,,0.5,,Planning,,contosoa
+carol@example.com,,10/3/2026,1:15 PM,1,,Support,,Fabrikam
