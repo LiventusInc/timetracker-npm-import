@@ -15,7 +15,7 @@ export class CLI {
     this.executeCLI();
   } 
 
-  public executeCLI(){
+  public async executeCLI(){
     program
       .name("import-worklogs")
       .version('0.0.2')
@@ -39,7 +39,7 @@ export class CLI {
       //work with excel data and mapping columns
       var mapData: Map<string, Worklog[]> = new Map<string, Array<Worklog>>();
       try {
-        mapData = this.dataService.getMappingData(program.file, program.map, program.api, program.organization);
+        mapData = await this.dataService.getMappingData(program.file, program.map, program.api, program.organization);
         if(mapData.size === 0){
           throw 'No worklog entries were found in the file.';
         }

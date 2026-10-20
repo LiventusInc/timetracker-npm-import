@@ -15,7 +15,7 @@ To build the application locally, you need to get the code from the repository a
 
 ## How to use
 
-First of all, you need to decide on the format of the imported files. Import supports file extensions: `xlsx`, `xls`, `csv`.
+First of all, you need to decide on the format of the imported files. Import supports file extensions: `xlsx`, `csv`. Legacy `xls` files must be re-saved as `xlsx` first.
 
 To compare the values from the table in the file and the data sent to api, mapping of columns into fields is necessary.
 
