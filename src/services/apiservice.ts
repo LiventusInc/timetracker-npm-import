@@ -39,7 +39,7 @@ export class APIService{
                 for (let index = 0; index < response.data.length; index++) {
                     const user = response.data[index];
                     if(user) {
-                     var uniqueName = auth == AuthType.ntlm ? user.uniqueName.replace("\\", "\\\\") : user.uniqueName;   
+                     var uniqueName = auth == AuthType.ntlm ? user.uniqueName.replace(/\\/g, "\\\\") : user.uniqueName;   
                      if(uniqueName && !users.has(uniqueName)){
                         users.set(uniqueName, user.id);
                      }
